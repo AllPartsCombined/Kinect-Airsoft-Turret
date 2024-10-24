@@ -14,6 +14,8 @@ public class PersonTracker : MonoBehaviour
 
     private Kinect.KinectSensor sensor;
 
+    private ulong currentlyTracking = 0;
+
     public event Action<string, Vector3> OnTrackedJointUpdated;
 
 
@@ -35,7 +37,7 @@ public class PersonTracker : MonoBehaviour
         {
             return;
         }
-        
+        bool tracking = false;
         foreach(var body in data)
         {
             if (body == null)
@@ -43,11 +45,15 @@ public class PersonTracker : MonoBehaviour
                 continue;
             }
             
-            if(body.IsTracked)
+            if(body.IsTracked && (currentlyTracking == 0 || body.TrackingId == currentlyTracking))
             {
+                tracking = true;
+                currentlyTracking = body.TrackingId;
                 RefreshBodyObject(body);
             }
         }
+        if (!tracking)
+            currentlyTracking = 0;
     }
     
     private void RefreshBodyObject(Kinect.Body body)
